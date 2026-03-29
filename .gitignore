@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+
+# Runtime output directory
+mind_map_output/
