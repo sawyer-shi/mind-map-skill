@@ -66,8 +66,13 @@ Auto rule in free mode:
 - Detailed reference: `mind-map-skill/reference.md`
 - Usage examples: `mind-map-skill/examples.md`
 
+## Font behavior
+
+- On first run, the skill attempts to download a CJK font to local cache: `~/.cache/mind-map-skill/chinese_font.ttc`.
+- Download source in repository: `resources/chinese_font.ttc` (not part of skill upload package).
+- If download is unavailable, it falls back to prioritized system CJK fonts (Linux/macOS/Windows specific order).
+
 ## Project metadata
 
 - **Author**: [@sawyer-shi](https://github.com/sawyer-shi)
 - **Email**: sawyer36@foxmail.com
-- **License**: Apache License 2.0

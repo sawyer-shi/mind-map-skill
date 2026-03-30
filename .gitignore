@@ -1,5 +1,24 @@
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.tmp
+
+# Python/cache/tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
 
 # Runtime output directory
 mind_map_output/

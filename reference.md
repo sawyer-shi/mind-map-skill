@@ -4,6 +4,26 @@
 
 Generate a PNG mind map from Markdown text.
 
+## Font handling
+
+On first run, this skill downloads a CJK font to local cache:
+
+- `~/.cache/mind-map-skill/chinese_font.ttc`
+- Remote source: `https://raw.githubusercontent.com/sawyer-shi/mind-map-skill/main/resources/chinese_font.ttc`
+
+Repository storage:
+
+- `resources/chinese_font.ttc` (kept in git repository, excluded from skill package upload)
+
+It then uses the cached font to avoid Chinese text garbling on Linux/macOS.
+If download fails, it falls back to system fonts.
+
+System fallback priority:
+
+- Linux: WenQuanYi (MicroHei/ZenHei) -> Noto CJK -> AR PL fonts -> DejaVu Sans
+- macOS: PingFang -> Hiragino Sans GB -> STHeiti/Songti/Heiti
+- Windows: Microsoft YaHei/JhengHei -> SimHei -> SimSun
+
 ## Layout modes
 
 - `free`: Auto-select layout by complexity.
@@ -52,4 +72,3 @@ To disable date grouping, pass `--flat-output`.
 
 - Author: [@sawyer-shi](https://github.com/sawyer-shi)
 - Email: sawyer36@foxmail.com
-- License: Apache License 2.0

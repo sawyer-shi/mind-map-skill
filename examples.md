@@ -42,4 +42,3 @@ Add `--flat-output` if you want files directly under `mind_map_output/`.
 
 - Author: [@sawyer-shi](https://github.com/sawyer-shi)
 - Email: sawyer36@foxmail.com
-- License: Apache License 2.0

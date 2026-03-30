@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import argparse
 import math
+import platform
 import re
 import time
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
@@ -11,6 +13,9 @@ from typing import Any, Optional
 from PIL import Image, ImageDraw, ImageFont
 
 # Author: https://github.com/sawyer-shi
+
+
+FONT_DOWNLOAD_URL = "https://raw.githubusercontent.com/sawyer-shi/mind-map-skill/main/resources/chinese_font.ttc"
 
 
 PALETTE = [
@@ -142,20 +147,88 @@ def choose_layout(root: Node) -> str:
     return "horizontal"
 
 
-def _find_font_path() -> Optional[str]:
-    candidates = [
-        "C:/Windows/Fonts/msyh.ttc",
-        "C:/Windows/Fonts/simhei.ttf",
-        "C:/Windows/Fonts/simsun.ttc",
-        "/System/Library/Fonts/PingFang.ttc",
-        "/System/Library/Fonts/Hiragino Sans GB.ttc",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-    ]
-    for path in candidates:
+def _get_cached_font_path() -> Path:
+    cache_dir = Path.home() / ".cache" / "mind-map-skill"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir / "chinese_font.ttc"
+
+
+def _ensure_cached_font() -> Optional[str]:
+    cached = _get_cached_font_path()
+    if cached.exists() and cached.stat().st_size > 1024:
+        return str(cached)
+
+    try:
+        with urllib.request.urlopen(FONT_DOWNLOAD_URL, timeout=8) as resp:
+            data = resp.read()
+        if len(data) > 1024:
+            cached.write_bytes(data)
+            return str(cached)
+    except Exception:
+        return None
+
+    return None
+
+
+def _first_existing(paths: list[str]) -> Optional[str]:
+    for path in paths:
         if Path(path).exists():
             return path
     return None
+
+
+def _find_system_cjk_font() -> Optional[str]:
+    system = platform.system()
+
+    if system == "Windows":
+        # Prefer Chinese-friendly fonts on Windows.
+        return _first_existing(
+            [
+                "C:/Windows/Fonts/msyh.ttc",      # Microsoft YaHei
+                "C:/Windows/Fonts/msyhbd.ttc",
+                "C:/Windows/Fonts/msjh.ttc",      # Microsoft JhengHei
+                "C:/Windows/Fonts/simhei.ttf",    # SimHei
+                "C:/Windows/Fonts/simsun.ttc",    # SimSun
+            ]
+        )
+
+    if system == "Darwin":
+        # Prefer CJK-capable fonts on macOS.
+        return _first_existing(
+            [
+                "/System/Library/Fonts/PingFang.ttc",
+                "/System/Library/Fonts/Hiragino Sans GB.ttc",
+                "/System/Library/Fonts/STHeiti Light.ttc",
+                "/System/Library/Fonts/Supplemental/Songti.ttc",
+                "/System/Library/Fonts/Supplemental/Heiti SC.ttc",
+            ]
+        )
+
+    # Linux and other Unix-like systems:
+    # 1) WenQuanYi/MicroHei family
+    # 2) Noto CJK
+    # 3) AR PL fallback
+    return _first_existing(
+        [
+            "/usr/share/fonts/wqy-microhei/wqy-microhei.ttc",
+            "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+            "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/arphic/uming.ttc",
+            "/usr/share/fonts/truetype/arphic/ukai.ttc",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ]
+    )
+
+
+def _find_font_path() -> Optional[str]:
+    cached = _ensure_cached_font()
+    if cached:
+        return cached
+
+    return _find_system_cjk_font()
 
 
 def _font(size: int, font_path: Optional[str]) -> Any:
